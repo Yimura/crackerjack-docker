@@ -1,0 +1,45 @@
+name: Build & Push container to GH registry
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-container:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout source
+        uses: actions/checkout@v3
+
+      -
+        name: Login to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: yimura
+          password: ${{ secrets.PACKAGE_WRITE_TOKEN }}
+
+      -
+        name: Build and push container
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ghcr.io/yimura/crackerjack-docker:latest
+
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: yimura
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      -
+        name: Build and push container
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: yimura/crackerjack-docker:latest
