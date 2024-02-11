@@ -1,6 +1,8 @@
 version: '3.5'
 services:
   crackerjack:
-    build: .
+    container_name: crackerjack
+    image: ghcr.io/yimura/crackerjack-docker
+    restart: unless-stopped
     ports:
       - 8080:8080
