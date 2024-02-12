@@ -73,11 +73,6 @@ RUN find . -type f -iname '*.py' -exec sed -i "s|settings.get('hashcat_binary', 
 COPY entrypoint.sh .
 RUN chmod +x ./entrypoint.sh
 
-RUN apt install bash -y
-
 RUN sed -i -e 's/\r$//' ./entrypoint.sh
 
-SHELL ["/bin/bash", "-c"]
-
-ENTRYPOINT [ "/bin/bash", "-c", "./entrypoint.sh" ]
-# ENTRYPOINT [ "ls" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
