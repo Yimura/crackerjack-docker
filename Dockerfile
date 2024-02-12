@@ -16,7 +16,20 @@ RUN git clone https://github.com/hashcat/hashcat.git . -b $HASHCAT_VERSION --dep
     make &&\
     make install DESTDIR=$HASHCAT_INSTALL_DIR
 
-FROM ubuntu:jammy AS prod
+FROM ubuntu:jammy AS wordlist-fetcher
+
+RUN apt update &&\
+    apt install -y -q git
+
+WORKDIR /opt/wordlists
+RUN git clone https://github.com/danielmiessler/SecLists.git --depth 1 &&\
+    find . -type f -iname '*.tar.gz' -exec tar -xf {} \;
+
+WORKDIR /opt/rules
+RUN git clone https://github.com/NotSoSecure/password_cracking_rules.git --depth=1
+
+# FROM ubuntu:jammy AS prod
+FROM nvidia/cuda:12.3.1-devel-ubuntu22.04 AS prod
 
 ARG DEBIAN_FRONTEND
 ARG HASHCAT_INSTALL_DIR
@@ -36,12 +49,9 @@ RUN apt update &&\
 RUN apt update &&\
     apt install -y -q pocl-opencl-icd intel-opencl-icd clinfo
 
-WORKDIR /opt/wordlists
-RUN git clone https://github.com/danielmiessler/SecLists.git --depth 1 &&\
-    find . -type f -iname '*.tar.gz' -exec tar -xf {} \;
+COPY --from=wordlist-fetcher /opt/wordlists /opt/wordlists
 
-WORKDIR /opt/rules
-RUN git clone https://github.com/NotSoSecure/password_cracking_rules.git --depth=1
+COPY --from=wordlist-fetcher /opt/rules /opt/rules
 
 WORKDIR /opt/crackerjack
 
@@ -53,4 +63,11 @@ RUN find . -type f -iname '*.py' -exec sed -i "s|settings.get('hashcat_binary', 
 COPY entrypoint.sh .
 RUN chmod +x ./entrypoint.sh
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+RUN apt install bash -y
+
+RUN sed -i -e 's/\r$//' ./entrypoint.sh
+
+SHELL ["/bin/bash", "-c"]
+
+ENTRYPOINT [ "/bin/bash", "-c", "./entrypoint.sh" ]
+# ENTRYPOINT [ "ls" ]
