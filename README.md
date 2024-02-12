@@ -11,7 +11,7 @@ The following hardware vendors are supported currently:
  - [ ] OpenCL (AMD)
 
 **GPU:**
- - [ ] CUDA (Nvidia)
+ - [x] CUDA (Nvidia)
  - [ ] AMD?
 
 ## Usage
