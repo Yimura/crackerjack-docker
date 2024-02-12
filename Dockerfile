@@ -20,8 +20,10 @@ FROM ubuntu:jammy AS prod
 
 ARG DEBIAN_FRONTEND
 ARG HASHCAT_INSTALL_DIR
+
 ARG USER=crackerjack
 ENV HOME /home/$USER
+
 ENV ADDRESS 0.0.0.0
 ENV PORT 8080
 
@@ -36,12 +38,15 @@ RUN apt update &&\
 RUN apt update &&\
     apt install -y -q pocl-opencl-icd intel-opencl-icd clinfo
 
+SHELL ["/bin/bash", "-c"]
+ARG ADD_WORDLIST_N_RULES=false
+
 WORKDIR /opt/wordlists
-RUN git clone https://github.com/danielmiessler/SecLists.git --depth 1 &&\
+RUN [[ "$ADD_WORDLIST_N_RULES" == "true" ]] && git clone https://github.com/danielmiessler/SecLists.git --depth 1 &&\
     find . -type f -iname '*.tar.gz' -exec tar -xf {} \;
 
 WORKDIR /opt/rules
-RUN git clone https://github.com/NotSoSecure/password_cracking_rules.git --depth=1
+RUN [[ "$ADD_WORDLIST_N_RULES" == "true" ]] && git clone https://github.com/NotSoSecure/password_cracking_rules.git --depth=1
 
 WORKDIR /opt/crackerjack
 
