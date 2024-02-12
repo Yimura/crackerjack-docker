@@ -10,7 +10,7 @@ The following drivers are already built into the container.
  - [x] OpenCL (AMD / Intel)
 
 **GPU:**
- - [ ] CUDA (Nvidia)
+ - [x] CUDA (Nvidia)
  - [ ] AMD?
 
 ## Usage
