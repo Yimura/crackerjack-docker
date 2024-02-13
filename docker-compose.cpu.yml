@@ -5,6 +5,9 @@ services:
       context: .
       args:
         - ADD_WORDLIST_N_RULES=true
+    container_name: crackerjack
+    image: ghcr.io/yimura/crackerjack-docker
+    restart: unless-stopped
     ports:
       - 8080:8080
     volumes:
