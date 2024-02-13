@@ -2,6 +2,8 @@ name: Build & Push container to GH registry
 
 on:
   push:
+    branches:
+      - "master"
   workflow_dispatch:
 
 permissions:

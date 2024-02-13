@@ -4,8 +4,8 @@
 
 set COMPOSE_PREFIX_CMD = COMPOSE_DOCKER_CLI_BUILD=1
 
-set COMPOSE_CPU=-f docker-compose.cpu.yml
-set COMPOSE_GPU=-f docker-compose.gpu.yml
+set COMPOSE_CPU=crackerjack-cpu
+set COMPOSE_GPU=crackerjack-gpu
 
 set SELECTED_LOCAL=--no-build --pull always
 
@@ -64,47 +64,47 @@ call:build & call:up & call:prepopulate
 EXIT /B 0
 
 :up
-docker-compose %SELECTED_PROFILE% up -d %SELECTED_LOCAL%
+docker-compose up -d %SELECTED_LOCAL% %SELECTED_PROFILE%
 EXIT /B 0
 
 :build
-docker-compose %SELECTED_PROFILE% build --build-arg ADD_WORDLIST_N_RULES="true"
+docker-compose build --build-arg ADD_WORDLIST_N_RULES="true" %SELECTED_PROFILE%
 EXIT /B 0
 
 :prepopulate
-docker-compose %SELECTED_PROFILE% exec crackerjack ls
+docker-compose exec %SELECTED_PROFILE% ls
 EXIT /B 0
 
 :pull
-docker login docker.pkg.github.com & docker-compose %SELECTED_PROFILE% pull
+docker login docker.pkg.github.com & docker-compose pull %SELECTED_PROFILE%
 EXIT /B 0
 
 :down
-docker-compose %SELECTED_PROFILE% down
+docker-compose down %SELECTED_PROFILE%
 EXIT /B 0
 
 :stop
-docker-compose %SELECTED_PROFILE% stop %SERVICES%
+docker-compose stop %SELECTED_PROFILE%
 EXIT /B 0
 
 :restart
-docker-compose %SELECTED_PROFILE% restart %SERVICES%
+docker-compose restart %SELECTED_PROFILE%
 EXIT /B 0
 
 :check-available-devices
-docker-compose %SELECTED_PROFILE% exec crackerjack-docker-crackerjack-1 hashcat -I
+docker-compose exec %SELECTED_PROFILE% hashcat -I
 EXIT /B 0
 
 :rm
-docker-compose %SELECTED_PROFILE% rm -f %SERVICES%
+docker-compose rm -f %SELECTED_PROFILE%
 EXIT /B 0
 
 :logs
-docker-compose %SELECTED_PROFILE% logs --follow --tail=1000 %SERVICES%
+docker-compose logs --follow --tail=1000 %SELECTED_PROFILE%
 EXIT /B 0
 
 :images
-docker-compose %SELECTED_PROFILE% images %SERVICES%
+docker-compose images %SELECTED_PROFILE%
 EXIT /B 0
 
 :prune

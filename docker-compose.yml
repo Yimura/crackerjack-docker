@@ -1,0 +1,50 @@
+version: '3.5'
+services:
+  hashcat-build:
+    image: yimura/crackerjack-docker:hashcat
+    build:
+      context: .
+      dockerfile: hashcat/Dockerfile
+    command: "2>&1 /dev/null"
+  
+  wordlists:
+    image: yimura/crackerjack-docker:wordlists
+    build:
+      context: .
+      dockerfile: wordlists/Dockerfile
+    command: "2>&1 /dev/null"
+
+  crackerjack-cpu:
+    container_name: crackerjack
+    image: yimura/crackerjack-docker:cpu
+    build:
+      context: .
+      dockerfile: cpu/Dockerfile
+    depends_on:
+      - hashcat-build
+      - wordlists
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/:/opt/crackerjack/data/
+
+  crackerjack-gpu:
+    container_name: crackerjack
+    image: yimura/crackerjack-docker:nvidia
+    build:
+      context: .
+      dockerfile: cpu/Dockerfile
+    depends_on:
+      - hashcat-build
+      - wordlists
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/:/opt/crackerjack/data/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
