@@ -53,7 +53,6 @@ RUN apt update &&\
     apt install -y -q pocl-opencl-icd intel-opencl-icd clinfo
 
 SHELL ["/bin/bash", "-c"]
-ARG ADD_WORDLIST_N_RULES=false
 
 COPY --from=wordlist-fetcher /opt/wordlists /opt/wordlists
 
