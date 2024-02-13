@@ -4,42 +4,22 @@
 
 set COMPOSE_PREFIX_CMD = COMPOSE_DOCKER_CLI_BUILD=1
 
-set COMPOSE_INTEL_LOCAL=-f docker-compose.intel.local.yml
-set COMPOSE_AMD_LOCAL=-f docker-compose.amd.local.yml
-set COMPOSE_INTEL_NVIDIA_LOCAL=-f docker-compose.nvidia.local.yml
-set COMPOSE_INTEL=-f docker-compose.yml
-set COMPOSE_INTEL_NVIDIA=-f docker-compose.nvidia.yml
+set COMPOSE_CPU=-f docker-compose.cpu.yml
+set COMPOSE_GPU=-f docker-compose.gpu.yml
 
-set SELECTED_PROFILE=%COMPOSE_INTEL%
+set SELECTED_LOCAL=--no-build --pull always
+
+set SELECTED_PROFILE=%COMPOSE_CPU%
 
 if "%2" == "local" (
-    if "%3" == "intel" (
-        set SELECTED_PROFILE=%COMPOSE_INTEL_LOCAL%
-        if "%4" == "nvidia" (
-            set SELECTED_PROFILE=%COMPOSE_INTEL_NVIDIA_LOCAL%
-        )
-    ) else (
-        set SELECTED_PROFILE=%COMPOSE_AMD_LOCAL%
-        if "%4" == "nvidia" (
-            set SELECTED_PROFILE=%COMPOSE_AMD_NVIDIA_LOCAL%
-        )
+    set SELECTED_LOCAL=--build --pull never
+    if "%3" == "gpu" (
+        set SELECTED_PROFILE=%COMPOSE_GPU%
     )
 )
-
-if "%2" == "intel" (
-    if "%3" == "nvidia" (
-        set SELECTED_PROFILE=%COMPOSE_INTEL_NVIDIA_LOCAL%
-    )
+if "%2" == "gpu" (
+    set SELECTED_PROFILE=%COMPOSE_GPU%
 )
-if "%2" == "amd" (
-    set SELECTED_PROFILE=%COMPOSE_AMD_LOCAL%
-    if "%3" == "nvidia" (
-        set SELECTED_PROFILE=%COMPOSE_AMD_NVIDIA_LOCAL%
-    )
-)
-
-
-@echo test %SELECTED_PROFILE%
 
 :: Generate certificates.
 if "%1" == "setup" call:setup
@@ -70,7 +50,11 @@ if "%1" == "prune" call:prune
 :: Show this help.
 if "%1" == "help" (
     @echo To use the application, run the following commands:
-    make {setup|up|build|prepopulate|pull|down|stop|restart|check-available-devices|rm|logs|images|prune}
+    @echo make {setup,up,build,prepopulate,pull,down,stop,restart,check-available-devices,rm,logs,images,prune} {local or nothing} {gpu or nothing}
+    @echo Example: make up local gpu
+    @echo Example: make up local
+    @echo Example: make up
+    @echo Example: make up gpu
 )
 
 EXIT /B 1
@@ -80,7 +64,7 @@ call:build & call:up & call:prepopulate
 EXIT /B 0
 
 :up
-docker-compose %SELECTED_PROFILE% up -d --build
+docker-compose %SELECTED_PROFILE% up -d %SELECTED_LOCAL%
 EXIT /B 0
 
 :build
