@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   modified-dockerfiles:
+    name: Have any Dockerfiles been modified?
     runs-on: ubuntu-latest
     steps:
       -
@@ -35,6 +36,7 @@ jobs:
               - 'wordlists/Dockerfile'
 
   build-dependencies:
+    name: Build dependencies required for core files
     needs: [ modified-dockerfiles ]
     strategy:
       fail-fast: true
@@ -84,6 +86,7 @@ jobs:
             ADD_WORDLIST_N_RULES=true
       
   build-container:
+    name: Building CPU and GPU images
     needs: [ build-dependencies ]
     strategy:
       fail-fast: true
