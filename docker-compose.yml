@@ -12,6 +12,8 @@ services:
     build:
       context: .
       dockerfile: wordlists/Dockerfile
+      args:
+        - ADD_WORDLIST_N_RULES=true
     command: "2>&1 /dev/null"
 
   crackerjack-cpu:
