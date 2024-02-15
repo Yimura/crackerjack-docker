@@ -22,7 +22,7 @@ jobs:
     steps:
       - 
         name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       -
         name: Set up Docker Buildx
@@ -40,7 +40,7 @@ jobs:
       
       -
         name: Upload dependency
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.image }}
           path: /tmp/${{ matrix.image }}.tar
@@ -56,7 +56,7 @@ jobs:
     steps:
       -
         name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       -
         name: Set up Docker Buildx
@@ -64,14 +64,14 @@ jobs:
 
       -
         name: Download hashcat dependency
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: hashcat
           path: /tmp
 
       -
         name: Download wordlists dependency
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wordlists
           path: /tmp
@@ -83,6 +83,10 @@ jobs:
       -
         name: Load wordlists dependecy
         run: docker load --input /tmp/wordlists.tar
+
+      - 
+        name: Free disk space
+        run: rm -rf /tmp/*.tar
 
       -
         name: Login to ghcr.io
