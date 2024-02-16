@@ -1,4 +1,4 @@
-name: Build & Push container to GH registry
+name: Build & Push
 
 on:
   push:
@@ -12,32 +12,8 @@ permissions:
   contents: write
 
 jobs:
-  modified-dockerfiles:
-    name: Have any Dockerfiles been modified?
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout source
-        uses: actions/checkout@v3
-      
-      -
-        name: Check if any Dockerfiles were modified
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            cpu:
-              - 'cpu/Dockerfile'
-            hashcat:
-              - 'hashcat/Dockerfile'
-            nvidia:
-              - 'nvidia/Dockerfile'
-            wordlists:
-              - 'wordlists/Dockerfile'
-
   build-dependencies:
-    name: Build dependencies required for core files
-    needs: [ modified-dockerfiles ]
+    name: Dependencies
     strategy:
       fail-fast: true
       matrix: 
@@ -46,38 +22,22 @@ jobs:
     steps:
       - 
         name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       -
-        name: Login to ghcr.io
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: yimura
-          password: ${{ secrets.PACKAGE_WRITE_TOKEN }}
-
-      -
-        name: Build and push container
-        if: steps.changes.outputs.${{ matrix.image }} == 'true'
-        uses: docker/build-push-action@v4
-        with:
-          file: ${{ matrix.image }}/Dockerfile
-          push: true
-          tags: ghcr.io/yimura/crackerjack-docker:${{ matrix.image }}
-          build-args: |
-            ADD_WORDLIST_N_RULES=true
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       -
         name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: yimura
           password: ${{ secrets.DOCKER_TOKEN }}
 
       -
-        name: Build and push container
-        if: steps.changes.outputs.${{ matrix.image }} == 'true'
-        uses: docker/build-push-action@v4
+        name: Build dependency
+        uses: docker/build-push-action@v5
         with:
           file: ${{ matrix.image }}/Dockerfile
           push: true
@@ -86,7 +46,7 @@ jobs:
             ADD_WORDLIST_N_RULES=true
       
   build-container:
-    name: Building CPU and GPU images
+    name: CPU & GPU
     needs: [ build-dependencies ]
     strategy:
       fail-fast: true
@@ -96,37 +56,36 @@ jobs:
     steps:
       -
         name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       -
         name: Login to ghcr.io
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: yimura
           password: ${{ secrets.PACKAGE_WRITE_TOKEN }}
 
       -
-        name: Build and push container
-        if: steps.changes.outputs.${{ matrix.image }} == 'true'
-        uses: docker/build-push-action@v4
-        with:
-          file: ${{ matrix.image }}/Dockerfile
-          push: true
-          tags: ghcr.io/yimura/crackerjack-docker:${{ matrix.image }}
-
-      -
         name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: yimura
           password: ${{ secrets.DOCKER_TOKEN }}
 
       -
-        name: Build and push container
-        if: steps.changes.outputs.${{ matrix.image }} == 'true'
-        uses: docker/build-push-action@v4
+        name: Build and push to Docker Hub
+        uses: docker/build-push-action@v5
         with:
           file: ${{ matrix.image }}/Dockerfile
           push: true
           tags: yimura/crackerjack-docker:${{ matrix.image }}
+
+      -
+        name: Retag and push to Github Container Registry
+        run: |
+          docker buildx imagetools create --tag ghcr.io/yimura/crackerjack-docker:${{ matrix.image }} yimura/crackerjack-docker:${{ matrix.image }}
