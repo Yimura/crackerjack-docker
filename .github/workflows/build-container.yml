@@ -55,10 +55,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        name: Maximize build space
-        uses: easimon/maximize-build-space@master
-
-      -
         name: Checkout source
         uses: actions/checkout@v4
 
